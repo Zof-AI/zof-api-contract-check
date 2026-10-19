@@ -1,0 +1,56 @@
+{
+  "name": "@zof-ai/api-contract-check",
+  "version": "0.1.0",
+  "description": "Bounded offline OpenAPI and JSON Schema compatibility analysis",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "zof-api-contract-check": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs",
+    "examples"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zof-AI/zof-api-contract-check.git"
+  },
+  "homepage": "https://github.com/Zof-AI/zof-api-contract-check#readme",
+  "bugs": {
+    "url": "https://github.com/Zof-AI/zof-api-contract-check/issues"
+  },
+  "keywords": [
+    "verification",
+    "testing",
+    "zof"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run build && npm test",
+    "test:package": "node tests/package.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/node": "22.19.11"
+  }
+}

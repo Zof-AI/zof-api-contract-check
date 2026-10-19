@@ -1,0 +1,6 @@
+{
+  "failOn": "medium",
+  "severity": {
+    "authentication-changed": "medium"
+  }
+}
