@@ -12,7 +12,7 @@ try {
     console.log(
       "zof-api-contract-check BASELINE.json CANDIDATE.json [--root DIR] [--kind openapi|json-schema] [--policy POLICY.json] [--json|--markdown]\nOffline JSON contracts. Exit 0: completed below threshold; 1: findings; 2: invalid/unsupported input.",
     );
-  } else if (args.includes("--version")) console.log("0.1.0");
+  } else if (args.includes("--version")) console.log("0.1.1");
   else {
     let root = process.cwd(),
       format = "markdown",
