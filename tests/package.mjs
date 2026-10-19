@@ -38,7 +38,7 @@ try {
     JSON.stringify({ private: true, type: "module" }),
   );
   const candidates = [];
-  const evidence = resolve("../../orchestration/artifacts/zofai-evidence-spec-0.1.0.tgz");
+  const evidence = resolve("../../orchestration/artifacts/zof-ai-evidence-spec-0.1.0.tgz");
   try { await access(evidence); candidates.push(evidence); } catch {}
   run(process.platform === "win32" ? "npm.cmd" : "npm", [
     "install",
@@ -51,7 +51,7 @@ try {
   const cli = join(
     temp,
     "node_modules",
-    "@zofai/api-contract-check",
+    "@zof-ai/api-contract-check",
     "dist/cli.js",
   );
   assert.match(run(process.execPath, [cli, "--version"]), /0\.1\.0/);
@@ -59,11 +59,11 @@ try {
   run(process.execPath, [
     "--input-type=module",
     "-e",
-    "import assert from 'node:assert/strict'; import { compareContracts } from '@zofai/api-contract-check'; assert.equal(compareContracts({type:'integer'},{type:'string'}).compatible,false);",
+    "import assert from 'node:assert/strict'; import { compareContracts } from '@zof-ai/api-contract-check'; assert.equal(compareContracts({type:'integer'},{type:'string'}).compatible,false);",
   ]);
   const metadata = JSON.parse(
     await readFile(
-      join(temp, "node_modules", "@zofai/api-contract-check", "package.json"),
+      join(temp, "node_modules", "@zof-ai/api-contract-check", "package.json"),
       "utf8",
     ),
   );
@@ -73,7 +73,7 @@ try {
       status: "passed",
       checks: 5,
       files: packed.files.length,
-      package: "@zofai/api-contract-check",
+      package: "@zof-ai/api-contract-check",
     }),
   );
 } finally {
