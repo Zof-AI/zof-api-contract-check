@@ -16,14 +16,14 @@ npm run build
 npm test
 ```
 
-The bootstrap downloads only the exact public `v0.1.0` dependency assets listed in `scripts/release-dependencies.json`, verifies SHA256 and byte size, and adds them to the npm cache. It does not extract archives, run package scripts, collect application data, or send credentials. Downloads require the explicit flag and follow only HTTPS GitHub asset redirects. Installation then fetches ordinary third-party dependencies from npm. Use a writable npm cache; set `npm_config_cache` consistently for both commands if needed. An unavailable asset, changed hash, or oversized response stops installation.
+The bootstrap downloads only the exact `v0.1.0` dependency assets from [GitHub Releases](https://github.com/Zof-AI/zof-api-contract-check/releases), as listed in `scripts/release-dependencies.json`, verifies SHA256 and byte size, and adds them to the npm cache. It does not extract archives, run package scripts, collect application data, or send credentials. Downloads require the explicit flag and follow only HTTPS GitHub asset redirects. Installation then fetches ordinary third-party dependencies from npm. Use a writable npm cache; set `npm_config_cache` consistently for both commands if needed. An unavailable asset, changed hash, or oversized response stops installation.
 
 GitHub source and release artifacts are the initial distribution channel. These instructions do not claim that `@zof-ai` packages are published on npm or that the VS Code extension is listed in Marketplace.
 <!-- ZOF_RELEASE_INSTALL_END -->
 
 ## Local installation
 
-Use Node.js 22 or 24. From this candidate repository:
+Use Node.js 22 or 24. After the source installation above:
 
 ```sh
 npm ci --ignore-scripts
@@ -32,7 +32,7 @@ npm test
 npm pack --ignore-scripts
 ```
 
-Install the resulting tarball in a separate project with `npm install /absolute/path/to/package.tgz`. The candidate package name is `@zof-ai/api-contract-check`; public registry installation and intended GitHub URLs remain unverified until publication approval. The proposed Apache-2.0 license requires owner and legal approval.
+Use the GitHub source installation above to obtain the exact release dependencies before building or importing the library. The npm package name is an identifier; registry publication remains separate.
 
 ## Three examples
 
