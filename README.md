@@ -1,81 +1,73 @@
 # Zof API Contract Check
 
-Compare local OpenAPI 3.0/3.1 JSON contracts or a supported JSON Schema subset. Findings explain endpoint/method removal, required inputs, incompatible request/response types, constraints, media types and authentication changes. The implementation is independently authored and works offline without a Zof account.
+Flag breaking changes in supported OpenAPI JSON contracts before merge. Compare two local files and get a finding such as: **the response field `id` changed from integer to string**. Runs offline without a Zof account or source upload.
+
+Use this for OpenAPI 3.0/3.1 JSON contracts or the documented JSON Schema subset. YAML, `allOf`/`oneOf`/`anyOf`, and external references are unsupported and return an incomplete-analysis error. See [supported scope](docs/LIMITATIONS.md) before trying your own contract.
+
+![Recorded CLI output: a response type change fails the check, then a compatible example succeeds.](docs/media/contract-check.gif)
+
+Captured from the public 0.1.1 package using synthetic examples; playback is paced for readability. The commands and findings are written out below. [Terminal recording](docs/media/contract-check.cast).
 
 <!-- ZOF_NPM_INSTALL_START -->
 ## Install from npm
 
-Use Node.js 22 or 24 and npm. File-based operations require Linux or macOS with Python 3.10 or newer; Windows file operations fail closed. In a new project directory, install the version used by this guide:
+Use **Node.js 22 or 24**, npm, and **Linux or macOS with Python 3.10+**. Windows file operations fail closed. In a new project directory, install the published version and run its deliberately breaking example:
 
 ```sh
 npm install --ignore-scripts --save-exact @zof-ai/api-contract-check@0.1.1
-npx --no-install zof-api-contract-check --help
+npx --no-install zof-api-contract-check baseline.json breaking.json --root node_modules/@zof-ai/api-contract-check/examples --kind openapi --markdown
 ```
 
-The package includes compiled JavaScript, TypeScript declarations and its runtime dependencies. No source build, Zof account or repository upload is required. `--ignore-scripts` disables installation lifecycle scripts; `--no-install` keeps the example commands from downloading another package.
+The command exits **1**, as intended. Its finding is:
 
-Confirm the public ESM entry point; this prints `function`:
-
-```sh
-node --input-type=module -e "import('@zof-ai/api-contract-check').then(api => console.log(typeof api.compareContracts))"
+```text
+- **high** type-incompatible: The accepted or returned value type is incompatible. (GET /items/responses/200/schema/properties/id)
 ```
 
-Run a packaged example from the same directory:
+The full report also lists the analysis limitations. The baseline declares `id` as an integer; the candidate declares a string. A client expecting an integer needs review before that change is released.
+
+Compare the compatible example next:
 
 ```sh
 npx --no-install zof-api-contract-check baseline.json compatible.json --root node_modules/@zof-ai/api-contract-check/examples --kind openapi --json
 ```
 
-The compatible OpenAPI example reports `compatible: true`; the breaking example described below exits 1.
+This command exits **0** and reports `compatible: true` for the supported checks. Neither command runs an API, sends requests, or proves runtime compatibility.
 
-Package: [@zof-ai/api-contract-check](https://www.npmjs.com/package/@zof-ai/api-contract-check). The source-checkout instructions and three additional workflows follow.
+The package includes compiled JavaScript, TypeScript declarations, runtime dependencies, and synthetic examples. `--ignore-scripts` disables installation lifecycle scripts; `--no-install` keeps later commands from downloading another package. Package: [@zof-ai/api-contract-check](https://www.npmjs.com/package/@zof-ai/api-contract-check).
 <!-- ZOF_NPM_INSTALL_END -->
 
-<!-- ZOF_RELEASE_INSTALL_START -->
-## Install from GitHub source
+## Check your own contract
 
-Requires Node.js 22 or 24, npm, and Git. Filesystem operations require Linux or macOS with Python 3.10 or newer; Windows file operations fail closed. Clone this repository and explicitly prepare its reviewed release dependencies:
-
-```sh
-git clone --branch v0.1.1 --depth 1 https://github.com/Zof-AI/zof-api-contract-check.git
-cd zof-api-contract-check
-node scripts/bootstrap.mjs --allow-network
-npm ci --ignore-scripts --prefer-offline
-npm run build
-npm test
-```
-
-The bootstrap downloads only the exact versioned dependency assets from [GitHub Releases](https://github.com/Zof-AI/zof-api-contract-check/releases), as listed in `scripts/release-dependencies.json`, verifies SHA256 and byte size, and adds them to the npm cache. It does not extract archives, run package scripts, collect application data, or send credentials. Downloads require the explicit flag and follow only HTTPS GitHub asset redirects. Installation then fetches ordinary third-party dependencies from npm. Use a writable npm cache; set `npm_config_cache` consistently for both commands if needed. An unavailable asset, changed hash, or oversized response stops installation.
-
-<!-- ZOF_RELEASE_INSTALL_END -->
-
-## Local installation
-
-Use Node.js 22 or 24. After the source installation above:
+Place the baseline and candidate inside one explicit directory:
 
 ```sh
-npm ci --ignore-scripts
-npm run build
-npm test
-npm pack --ignore-scripts
+npx --no-install zof-api-contract-check baseline.json candidate.json --root contracts --kind openapi --markdown
 ```
 
-Use the GitHub source installation above to obtain the exact release dependencies before building or importing the library. The npm package name is an identifier; registry publication remains separate.
+For standalone JSON Schema files, use `--kind json-schema`; the comparison describes accepted inputs, so a narrower candidate constraint is incompatible. Default reports are Markdown; `--json` produces structured findings. An optional `--policy policy.json` is resolved under the same root and can change severity and the failure threshold without removing findings.
 
-## Three examples
+| Exit code | Meaning | CI treatment |
+| --- | --- | --- |
+| 0 | Completed supported checks below the policy threshold | Check succeeded |
+| 1 | Findings meet the failure threshold | Review the contract change |
+| 2 | Invalid, unreadable, unsupported, or incomplete input | Fix the input or coverage gap; never count as a pass |
 
-Run from the repository root after building, or substitute the installed `zof-api-contract-check` executable.
+## Add a pull-request check
 
-```sh
-# Compatible optional response field: exit 0
-node dist/cli.js examples/baseline.json examples/compatible.json --json
-# Response integer changed to string: exit 1
-node dist/cli.js examples/baseline.json examples/breaking.json --markdown
-# Authentication rollout review with explicit policy: exit 1
-node dist/cli.js examples/baseline.json examples/authentication.json --policy examples/policy.json --json
-```
+Copy the [complete GitHub Actions workflow](examples/github-actions/api-contract.yml) to `.github/workflows/api-contract.yml`, then change its two `openapi.json` paths to your contract's repository-relative path. The workflow compares the PR's exact base and head commits using this package's CLI. It installs the tool separately and does not install or execute the checked-out application's code.
 
-Pass `--root DIR` to set the only readable workspace root. For standalone JSON Schema comparisons use `--kind json-schema`; this compares accepted inputs, so narrower candidate constraints are incompatible. Default reports are Markdown. Exit codes: 0 completed below the policy threshold, 1 findings at or above it, 2 invalid input or unsupported/incomplete analysis. All findings remain in the report when policy lowers severity.
+Read the [CI quickstart](docs/CI.md) for prerequisites, path configuration, branch protection, and the workflow's limits. The separate Zof GitHub Action performs generic source checks; this workflow calls **API Contract Check** directly.
+
+## Three practical walkthroughs
+
+The [walkthroughs](docs/WALKTHROUGHS.md) use the published npm package and synthetic inputs:
+
+1. A response field changes from integer to string.
+2. A new required query parameter breaks callers that omit it.
+3. An authentication declaration changes during a rollout.
+
+Each includes a runnable command, actual finding, expected exit code, and a follow-up check. These are reproducible teaching examples, not customer outcomes.
 
 ## Library
 
@@ -87,4 +79,10 @@ const report = compareContracts(baseline, candidate, { failOn: 'high' });
 console.log(renderMarkdown(report));
 ```
 
-See [API](docs/API.md), [limitations](docs/LIMITATIONS.md), [security](SECURITY.md), and [release gates](docs/RELEASE.md). No hosted integration or telemetry is implemented.
+See the [API reference](docs/API.md) for supported options and findings.
+
+## Install from GitHub source
+
+For source builds, use the [pinned source installation and development guide](docs/DEVELOPMENT.md). npm consumers can use the quickstart above without building this repository.
+
+See [limitations](docs/LIMITATIONS.md), [security](SECURITY.md), [contributing](CONTRIBUTING.md), and [release gates](docs/RELEASE.md). No telemetry or hosted integration is implemented. Independently authored and licensed under [Apache-2.0](LICENSE).

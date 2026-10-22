@@ -1,0 +1,49 @@
+name: API contract compatibility
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  api-contract:
+    name: API contract compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Set up the checker runtime
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: '22'
+
+      - name: Check the bounded filesystem runtime
+        run: python3 -c "import sys; assert sys.version_info >= (3, 10), 'Python 3.10 or newer required'"
+
+      - name: Install the published checker outside the application
+        working-directory: ${{ runner.temp }}
+        run: npm install --prefix "$RUNNER_TEMP/zof-contract-tool" --ignore-scripts --no-audit --no-fund --save-exact @zof-ai/api-contract-check@0.1.1
+
+      - name: Check out the exact PR base
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: contract-base
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Check out the exact PR head
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: contract-head
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Compare the declared API contracts
+        # Replace openapi.json in BOTH arguments with your contract's path.
+        # Keep contract-base/ and contract-head/ so the two revisions stay distinct.
+        run: >-
+          node "$RUNNER_TEMP/zof-contract-tool/node_modules/@zof-ai/api-contract-check/dist/cli.js"
+          contract-base/openapi.json contract-head/openapi.json
+          --root "$GITHUB_WORKSPACE" --kind openapi --markdown

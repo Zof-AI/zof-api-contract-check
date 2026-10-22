@@ -2,7 +2,7 @@
 
 Version 0.1.1 is distributed under [Apache-2.0](../LICENSE). [GitHub Releases](https://github.com/Zof-AI/zof-api-contract-check/releases) provides versioned source and reviewed build artifacts. Install `@zof-ai/api-contract-check@0.1.1` using the [npm quickstart](../README.md#install-from-npm). Refer to the release assets, commit SHA and recorded validation for the exact version.
 
-Start with the [source installation](../README.md#install-from-github-source). Run `node scripts/bootstrap.mjs --allow-network`, `npm ci --ignore-scripts --prefer-offline`, `npm run build`, `npm test`, and `npm pack --ignore-scripts`. The bootstrap checks the exact dependency release SHA256 and byte sizes. Do not replace failed checks with an unverified dependency or a `file:` reference in published metadata.
+Start with the [source installation](DEVELOPMENT.md#install-from-github-source). Run `node scripts/bootstrap.mjs --allow-network`, `npm ci --ignore-scripts --prefer-offline`, `npm run build`, `npm test`, and `npm pack --ignore-scripts`. The bootstrap checks the exact dependency release SHA256 and byte sizes. Do not replace failed checks with an unverified dependency or a `file:` reference in published metadata.
 
 Before releasing a new version, inspect source and Git history, dependency licenses, build outputs and every package entry. Resolve security findings; run independent negative and installation tests. Record artifact SHA256 and release commits. Maintain branch protection, private vulnerability reporting, least-privilege workflows and a protected release environment. The manual release-candidate workflow builds artifacts and does not publish automatically. Material release changes require a new review.
 
